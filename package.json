@@ -8,6 +8,7 @@
     "solc": "cd contracts && node zcompile.js",
     "ci": "node test/trigger.js -f 100",
     "start": "nodemon ./bin/www",
+    "uniswap": "node uniswap.js",
     "testmt": "node test/trigger.js",
     "moall": "mocha",
     "moerc20": "mocha --grep erc20",
@@ -15,6 +16,7 @@
     "test": "npx hardhat test"
   },
   "dependencies": {
+    "@uniswap/sdk": "^3.0.3",
     "assert": "^2.0.0",
     "bignumber.js": "^9.0.1",
     "chalk": "^4.1.0",

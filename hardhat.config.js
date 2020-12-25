@@ -1,5 +1,6 @@
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-web3");
+//   package.json: "type": "module",
 
 // This is a sample Hardhat task. To learn how to create your own go to https://hardhat.org/guides/create-task.html
 
@@ -55,7 +56,10 @@ module.exports = {
     artifacts: "./artifacts"
   },
   mocha: {
-    timeout: 20000
+    timeout: 20000,
+    //grep: "rewardRate"
+    grep: "Rewards"
+    //grep: "erc20"
   }
 };
 

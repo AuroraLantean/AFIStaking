@@ -2,6 +2,16 @@ archives
 build
 images
 
+# others
+AfiVault.sol
+ethActions.js
+ethFunc.js
+ethUtilities.js
+scripts/deployToken.js
+uniswap.js
+vault.sol
+vaultproxy.sol
+
 # Golang
 main
 main.zip

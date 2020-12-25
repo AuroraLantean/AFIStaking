@@ -614,6 +614,9 @@ abstract contract IRewardDistributionRecipient is Ownable {
     function isOnlyRewardDistribution() external view returns (bool) {
         return _msgSender() == rewardDistribution;
     }
+    function isOnlyRewardDistributionB(address user) external view returns (bool) {
+        return user == rewardDistribution;
+    }
     function setRewardDistribution(address _rewardDistribution)
         external
         onlyOwner
@@ -640,7 +643,7 @@ contract LPTokenWrapper {
     }
 
     function stake(uint256 amount) public virtual {
-      console.log("LPTokenWrapper stake() with amount:", amount);
+      console.log("LPTokenWrapper stake amount:", amount);
         _totalSupply = _totalSupply.add(amount);
         _balances[msg.sender] = _balances[msg.sender].add(amount);
         lpToken.safeTransferFrom(msg.sender, address(this), amount);
@@ -660,7 +663,7 @@ contract LPTokenWrapper {
 contract Rewards is LPTokenWrapper, IRewardDistributionRecipient {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
-    IERC20 public erc20Token;
+    IERC20 public erc20Token;//rewardToken
     uint256 public constant DURATION = 7 days;
     uint256 public periodFinish = 0;
     uint256 public rewardRate = 0;
@@ -668,6 +671,8 @@ contract Rewards is LPTokenWrapper, IRewardDistributionRecipient {
     uint256 public rewardPerTokenStored;
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
+    mapping(address => uint256) public rewardBalance;
+
     event RewardAdded(uint256 reward);
     event Staked(address indexed user, uint256 amount);    
     event Withdrawn(address indexed user, uint256 amount);
@@ -690,10 +695,10 @@ contract Rewards is LPTokenWrapper, IRewardDistributionRecipient {
         _;
     }
 
-    constructor(address _lpToken) {
+    constructor(address _lpToken, address _rewardToken) {
         console.log("sc deploying rewards ctrt");
         super.setLpToken(_lpToken);
-        erc20Token = IERC20(_lpToken);
+        erc20Token = IERC20(_rewardToken);
     }
 
     function lastTimeRewardApplicable() public view returns (uint256) {
@@ -744,7 +749,7 @@ contract Rewards is LPTokenWrapper, IRewardDistributionRecipient {
     function getReward() public updateReward(msg.sender) {
         uint256 reward = earned(msg.sender);
         if (reward > 0) {
-            console.log("sc reward > 0");
+            console.log("sc reward token earned:", reward);
             rewards[msg.sender] = 0;
             erc20Token.safeTransfer(msg.sender, reward);
             emit RewardPaid(msg.sender, reward);
@@ -753,6 +758,16 @@ contract Rewards is LPTokenWrapper, IRewardDistributionRecipient {
 
     function getData1() public view returns (uint256, uint256, uint256, uint256) {
         return (block.timestamp, periodFinish, rewardRate, DURATION);
+    }
+
+    function getRewardBalance(address user) public view returns (uint256) {
+        return rewardBalance[user];
+    }
+    function reduceRewardBalance(address user, uint256 amount) public onlyRewardDistribution {
+        rewardBalance[user] = rewardBalance[user].sub(amount);
+    }
+    function addRewardBalance(address user, uint256 amount) public onlyRewardDistribution {
+        rewardBalance[user] = rewardBalance[user].add(amount);
     }
 
     // admin: reset periodFinish, lastUpdateTime, rewardRate
@@ -778,7 +793,7 @@ contract Rewards is LPTokenWrapper, IRewardDistributionRecipient {
  * MIT License
  * ===========
  *
- * Copyright (c) 2020 Aries Financial
+ * Copyright (c) 2020,2021 Aries Financial
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
  *
